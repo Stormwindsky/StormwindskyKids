@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Safe Player pour la Communauté</title>
+    <title>Safe Player for Scratch Community</title>
     <style>
         :root {
             --scratch-orange: #ffab19;
@@ -33,10 +33,10 @@
 
         h1 { color: var(--scratch-blue); font-size: 1.5rem; text-align: center; }
 
-        /* Lecteur Vidéo */
+        /* Video Wrapper */
         .video-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* Ratio 16:9 */
+            padding-bottom: 56.25%; /* 16:9 Ratio */
             height: 0;
             overflow: hidden;
             border-radius: 10px;
@@ -51,7 +51,7 @@
             height: 100%;
         }
 
-        /* Contrôles */
+        /* Controls */
         .controls {
             margin-top: 20px;
             display: flex;
@@ -105,50 +105,52 @@
 <body>
 
 <div class="container">
-    <h1>Lecteur Sécurisé & Playlists</h1>
+    <h1>Safe Video Player & Custom Playlists</h1>
 
     <div class="video-wrapper">
         <div id="player"></div>
     </div>
 
     <div class="controls">
-        <button id="prevBtn" class="btn-nav" onclick="prevVideo()">← Précédente</button>
-        <button id="nextBtn" class="btn-nav" onclick="nextVideo()">Suivante →</button>
+        <button id="prevBtn" class="btn-nav" onclick="prevVideo()">← Previous</button>
+        <button id="nextBtn" class="btn-nav" onclick="nextVideo()">Next →</button>
     </div>
 
-    <div class="playlist-info" id="playlistStatus">
-        Vidéo 1 sur 1
+    <div id="playlistStatus" class="playlist-info">
+        Video 1 of 1
     </div>
 
     <div class="settings">
-        <h3>Paramètres de la Playlist</h3>
-        <p style="font-size: 0.8rem;">Collez un lien YouTube pour ajouter une vidéo à votre playlist locale.</p>
-        <input type="text" id="videoUrl" placeholder="Lien YouTube (ex: https://youtu.be/...)">
-        <button class="add-btn" onclick="addVideo()">Ajouter</button>
-        <button onclick="clearPlaylist()" style="background: #ff4d4d; color: white;">Effacer tout</button>
+        <h3>Playlist Settings</h3>
+        <p style="font-size: 0.8rem;">Paste a YouTube link to add it to your custom playlist.</p>
+        <input type="text" id="videoUrl" placeholder="YouTube Link (e.g., https://youtu.be/...)">
+        <button class="add-btn" onclick="addVideo()">Add Video</button>
+        <button onclick="resetPlaylist()" style="background: #ff4d4d; color: white;">Clear / Reset</button>
     </div>
 
-    <p class="disclaimer">Ce site n'est pas affilié à Scratch ou YouTube. Les vidéos doivent respecter les règles de la communauté.</p>
+    <p class="disclaimer">This tool is independent and not affiliated with Scratch or YouTube. Videos must follow the Community Guidelines.</p>
 </div>
 
 <script>
     let player;
     let playlist = [];
     let currentIndex = 0;
+    const DEFAULT_VIDEO = 'dQw4w9WgXcQ'; // Rick Astley - will be used if URL is empty
 
-    // 1. Initialisation de la Playlist via l'URL
+    // 1. Initialize Playlist from URL
     function init() {
         const params = new URLSearchParams(window.location.search);
         const vids = params.get('vids');
-        if (vids) {
+        
+        if (vids && vids.trim() !== "") {
             playlist = vids.split(',');
         } else {
-            playlist = ['dQw4w9WgXcQ']; // Vidéo par défaut (Rick Astley, classique !)
+            playlist = [DEFAULT_VIDEO];
         }
         updateUI();
     }
 
-    // 2. API YouTube
+    // 2. YouTube API Setup
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -161,8 +163,9 @@
             videoId: playlist[currentIndex],
             playerVars: {
                 'autoplay': 0,
-                'rel': 0, // Pas de vidéos suggérées
+                'rel': 0, // No suggested videos from other channels
                 'modestbranding': 1,
+                'iv_load_policy': 3, // Hide annotations
                 'origin': window.location.origin
             },
             events: {
@@ -172,13 +175,13 @@
     }
 
     function onPlayerStateChange(event) {
-        // Si la vidéo est terminée (YT.PlayerState.ENDED = 0)
-        if (event.data === 0) {
+        // Automatically play next video when current one ends
+        if (event.data === YT.PlayerState.ENDED) {
             nextVideo();
         }
     }
 
-    // 3. Logique de navigation
+    // 3. Navigation Logic
     function loadCurrentVideo() {
         player.loadVideoById(playlist[currentIndex]);
         updateUI();
@@ -199,20 +202,32 @@
         }
     }
 
-    // 4. Gestion de la Playlist
+    // 4. Playlist Management
     function addVideo() {
         const input = document.getElementById('videoUrl');
         const url = input.value;
         const videoId = extractVideoID(url);
 
         if (videoId) {
-            playlist.push(videoId);
+            // If the only video is the default one, replace it
+            if (playlist.length === 1 && playlist[0] === DEFAULT_VIDEO) {
+                playlist = [videoId];
+            } else {
+                playlist.push(videoId);
+            }
+            
             input.value = '';
             updateUI();
             updateURL();
-            alert("Vidéo ajoutée ! Le lien de la page a été mis à jour.");
+            
+            // If we just replaced the default, load it immediately
+            if (playlist.length === 1) {
+                loadCurrentVideo();
+            }
+            
+            alert("Video added! The URL in your browser is now your shareable playlist link.");
         } else {
-            alert("Lien invalide. Utilisez un lien YouTube standard.");
+            alert("Invalid link. Please use a standard YouTube URL.");
         }
     }
 
@@ -223,7 +238,7 @@
     }
 
     function updateUI() {
-        document.getElementById('playlistStatus').innerText = `Vidéo ${currentIndex + 1} sur ${playlist.length}`;
+        document.getElementById('playlistStatus').innerText = `Video ${currentIndex + 1} of ${playlist.length}`;
         document.getElementById('prevBtn').disabled = (currentIndex === 0);
         document.getElementById('nextBtn').disabled = (currentIndex === playlist.length - 1);
     }
@@ -233,9 +248,9 @@
         window.history.pushState({path: newUrl}, '', newUrl);
     }
 
-    function clearPlaylist() {
-        if(confirm("Effacer la playlist ?")) {
-            window.location.search = "";
+    function resetPlaylist() {
+        if(confirm("Do you want to clear the playlist and return to default?")) {
+            window.location.href = window.location.pathname;
         }
     }
 
