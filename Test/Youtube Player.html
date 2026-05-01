@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe Player pour la Communauté</title>
+    <style>
+        :root {
+            --scratch-orange: #ffab19;
+            --scratch-blue: #4d97ff;
+            --bg-color: #f9f9f9;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 { color: var(--scratch-blue); font-size: 1.5rem; text-align: center; }
+
+        /* Lecteur Vidéo */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* Ratio 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Contrôles */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-nav { background-color: var(--scratch-blue); color: white; }
+        .btn-nav:disabled { background-color: #ccc; }
+
+        .settings {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        input {
+            padding: 10px;
+            width: 60%;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .add-btn { background-color: var(--scratch-orange); color: white; }
+
+        .playlist-info {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .disclaimer {
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lecteur Sécurisé & Playlists</h1>
+
+    <div class="video-wrapper">
+        <div id="player"></div>
+    </div>
+
+    <div class="controls">
+        <button id="prevBtn" class="btn-nav" onclick="prevVideo()">← Précédente</button>
+        <button id="nextBtn" class="btn-nav" onclick="nextVideo()">Suivante →</button>
+    </div>
+
+    <div class="playlist-info" id="playlistStatus">
+        Vidéo 1 sur 1
+    </div>
+
+    <div class="settings">
+        <h3>Paramètres de la Playlist</h3>
+        <p style="font-size: 0.8rem;">Collez un lien YouTube pour ajouter une vidéo à votre playlist locale.</p>
+        <input type="text" id="videoUrl" placeholder="Lien YouTube (ex: https://youtu.be/...)">
+        <button class="add-btn" onclick="addVideo()">Ajouter</button>
+        <button onclick="clearPlaylist()" style="background: #ff4d4d; color: white;">Effacer tout</button>
+    </div>
+
+    <p class="disclaimer">Ce site n'est pas affilié à Scratch ou YouTube. Les vidéos doivent respecter les règles de la communauté.</p>
+</div>
+
+<script>
+    let player;
+    let playlist = [];
+    let currentIndex = 0;
+
+    // 1. Initialisation de la Playlist via l'URL
+    function init() {
+        const params = new URLSearchParams(window.location.search);
+        const vids = params.get('vids');
+        if (vids) {
+            playlist = vids.split(',');
+        } else {
+            playlist = ['dQw4w9WgXcQ']; // Vidéo par défaut (Rick Astley, classique !)
+        }
+        updateUI();
+    }
+
+    // 2. API YouTube
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '360',
+            width: '640',
+            videoId: playlist[currentIndex],
+            playerVars: {
+                'autoplay': 0,
+                'rel': 0, // Pas de vidéos suggérées
+                'modestbranding': 1,
+                'origin': window.location.origin
+            },
+            events: {
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    function onPlayerStateChange(event) {
+        // Si la vidéo est terminée (YT.PlayerState.ENDED = 0)
+        if (event.data === 0) {
+            nextVideo();
+        }
+    }
+
+    // 3. Logique de navigation
+    function loadCurrentVideo() {
+        player.loadVideoById(playlist[currentIndex]);
+        updateUI();
+        updateURL();
+    }
+
+    function nextVideo() {
+        if (currentIndex < playlist.length - 1) {
+            currentIndex++;
+            loadCurrentVideo();
+        }
+    }
+
+    function prevVideo() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            loadCurrentVideo();
+        }
+    }
+
+    // 4. Gestion de la Playlist
+    function addVideo() {
+        const input = document.getElementById('videoUrl');
+        const url = input.value;
+        const videoId = extractVideoID(url);
+
+        if (videoId) {
+            playlist.push(videoId);
+            input.value = '';
+            updateUI();
+            updateURL();
+            alert("Vidéo ajoutée ! Le lien de la page a été mis à jour.");
+        } else {
+            alert("Lien invalide. Utilisez un lien YouTube standard.");
+        }
+    }
+
+    function extractVideoID(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length == 11) ? match[2] : null;
+    }
+
+    function updateUI() {
+        document.getElementById('playlistStatus').innerText = `Vidéo ${currentIndex + 1} sur ${playlist.length}`;
+        document.getElementById('prevBtn').disabled = (currentIndex === 0);
+        document.getElementById('nextBtn').disabled = (currentIndex === playlist.length - 1);
+    }
+
+    function updateURL() {
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?vids=' + playlist.join(',');
+        window.history.pushState({path: newUrl}, '', newUrl);
+    }
+
+    function clearPlaylist() {
+        if(confirm("Effacer la playlist ?")) {
+            window.location.search = "";
+        }
+    }
+
+    init();
+</script>
+
+</body>
+</html>
