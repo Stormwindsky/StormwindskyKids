@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StormwindskyKids | Creations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Mode Only */
+            --bg-body: #f0f0f0;
+            --card-white: #ffffff;
+            --blue-main: #007aff;
+            --text-dark: #1d1d1f;
+            --text-dim: #86868b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 { font-weight: 800; font-size: 2.5rem; color: var(--blue-main); }
+        p { color: var(--text-dim); margin-top: 10px; }
+
+        /* Grid for Files */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .file-card {
+            background: var(--card-white);
+            padding: 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            border: 2px solid transparent;
+        }
+
+        .file-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--blue-main);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .file-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-dark);
+        }
+
+        .file-type {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--blue-main);
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        /* Status Messages */
+        #status {
+            text-align: center;
+            padding: 40px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .error { color: #ff3b30; }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Creations</h1>
+            <p>Explore the interactive projects from StormwindskyKids</p>
+        </header>
+
+        <div id="status">Loading creations...</div>
+        <div id="file-grid" class="grid"></div>
+    </div>
+
+    <script>
+        // Configuration de l'API GitHub
+        const REPO_OWNER = "Stormwindsky";
+        const REPO_NAME = "StormwindskyKids";
+        const FOLDER_PATH = "Creations/HTML";
+        const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FOLDER_PATH}`;
+
+        async function loadFiles() {
+            const grid = document.getElementById('file-grid');
+            const status = document.getElementById('status');
+
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) throw new Error("Could not connect to GitHub");
+
+                const files = await response.json();
+                
+                // Filtrer pour ne garder que les fichiers .html
+                const htmlFiles = files.filter(file => 
+                    file.type === "file" && file.name.toLowerCase().endsWith('.html')
+                );
+
+                if (htmlFiles.length === 0) {
+                    status.innerText = "No HTML creations found in this folder.";
+                    return;
+                }
+
+                status.style.display = 'none';
+
+                htmlFiles.forEach(file => {
+                    // Nettoyer le nom : enlever ".html" et remplacer les tirets/underscores par des espaces
+                    const cleanName = file.name
+                        .replace(/\.html$/i, '')
+                        .replace(/[-_]/g, ' ');
+
+                    const card = document.createElement('a');
+                    card.className = 'file-card';
+                    
+                    /* Note : Pour que le lien ouvre la page directement (au lieu du code source), 
+                       on utilise l'URL de GitHub Pages si activé, 
+                       sinon on utilise 'html_url' pour ouvrir sur GitHub.
+                    */
+                    card.href = `https://${REPO_OWNER}.github.io/${REPO_NAME}/${FOLDER_PATH}/${file.name}`;
+                    card.target = "_blank";
+
+                    card.innerHTML = `
+                        <div class="file-type">🌐</div>
+                        <div class="file-name">${cleanName}</div>
+                    `;
+
+                    grid.appendChild(card);
+                });
+
+            } catch (error) {
+                status.innerText = "Error: Failed to fetch creations.";
+                status.className = "error";
+                console.error(error);
+            }
+        }
+
+        // Lancer le chargement au démarrage
+        window.onload = loadFiles;
+    </script>
+</body>
+</html>
