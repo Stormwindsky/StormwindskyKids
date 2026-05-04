@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StormwindskyKids | Welcome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Mode Only as requested */
+            --bg-body: #f0f0f0;
+            --card-white: #ffffff;
+            --card-dark: #2d333b;
+            --blue-main: #007aff;
+            --blue-light: #5db0ff;
+            --text-dark: #1d1d1f;
+            --text-dim: #86868b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: all 0.3s ease; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .bento-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            border-radius: 35px; padding: 30px; display: flex; flex-direction: column;
+            justify-content: space-between; text-decoration: none; color: inherit;
+            border: 1px solid transparent; background: var(--card-white);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            border-color: var(--blue-main);
+        }
+
+        .dark-card { background: var(--card-dark); color: #fff; }
+        .blue { background: var(--blue-main); color: #fff; }
+        .sky { background: var(--blue-light); color: #fff; }
+
+        .col-2 { grid-column: span 2; }
+        .row-2 { grid-row: span 2; }
+
+        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
+        h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        p { font-size: 0.95rem; line-height: 1.5; opacity: 0.9; }
+
+        .tag {
+            background: rgba(255,255,255,0.2); padding: 5px 12px;
+            border-radius: 10px; font-size: 0.75rem; display: inline-block; margin-bottom: 15px;
+        }
+
+        .btn-container { display: flex; gap: 10px; margin-top: 20px; }
+        
+        /* Requested Navigator Button */
+        .btn-navigator {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            background: var(--blue-main);
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        footer { grid-column: span 4; text-align: center; padding: 20px; font-size: 0.75rem; color: var(--text-dim); }
+
+        @media (max-width: 850px) {
+            .bento-grid { grid-template-columns: repeat(2, 1fr); }
+            .col-2, footer { grid-column: span 2; }
+        }
+        @media (max-width: 550px) {
+            .bento-grid { grid-template-columns: 1fr; }
+            .col-2, .row-2, footer { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bento-grid">
+        <!-- Main Card -->
+        <div class="card dark-card col-2">
+            <div>
+                <h1>StormwindskyKids</h1>
+                <span class="tag">Friendly Creator</span>
+                <p>Welcome to my Scratch-friendly space! I love digital preservation, history, and creating fun projects for everyone to enjoy.</p>
+            </div>
+            <div class="btn-container">
+                <a href="fakeload.html" class="btn-navigator">🌐 Navigator</a>
+            </div>
+        </div>
+
+        <!-- Community Guidelines Info -->
+        <div class="card blue col-2">
+            <h2>Kindness Matters</h2>
+            <p>This site follows the Scratch Community Guidelines. We keep things friendly, respectful, and safe for all ages.</p>
+        </div>
+
+        <!-- Project Focus -->
+        <div class="card blue row-2">
+            <h2>Creative Works</h2>
+            <div style="margin-top: 20px;">
+                <p>• Educational Tools</p><br>
+                <p>• Historical Archives</p><br>
+                <p>• Fun Experiments</p><br>
+                <p>• Coding Tutorials</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>The Identity</h2>
+            <p>The name Stormwindsky comes from a special memory in Animal Jam. It’s been my creative handle ever since.</p>
+        </div>
+
+        <!-- Navigator Direct Link -->
+        <a href="fakeload.html" class="card">
+            <h2>🌐 Navigator</h2>
+            <p>Click here to explore the digital collection and experimental tools.</p>
+        </a>
+
+        <div class="card sky">
+            <h2>Safe Play</h2>
+            <p>I build applications and stories focused on positive social interactions and creativity.</p>
+        </div>
+
+        <div class="card">
+            <h2>Safety First</h2>
+            <p>To stay safe, no personal social media links are shared here. Keep Scratching and stay curious!</p>
+        </div>
+
+        <footer>
+            © 2026 StormwindskyKids | Designed for the Scratch Community | Built with Passion & Pride
+        </footer>
+    </div>
+
+</body>
+</html>
